@@ -1,0 +1,13 @@
+require "super_template/base"
+
+class <%= class_name %>Template < <%= parent_class %>
+  <%- if initialize_signature -%>
+  def initialize(<%= initialize_signature %>)
+    <%= initialize_body %>
+  end
+  <%- end -%>
+  <%- if initialize_call_method_for_inline? -%>
+  template <%= template_engine.to_sym.inspect -%>, <<-<%= template_engine.to_s.upcase %>
+  <%= template_engine.to_s.upcase %>
+  <%- end -%>
+end
