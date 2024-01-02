@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'inflector'
+require 'ostruct'
 require_relative 'compiler'
 
 module SuperTemplate
   class Base
-
     def call
-      self.class.compile unless self.class.compiled? || self.respond_to?(:render_template)
+      self.class.compile unless self.class.compiled?
       render_template
     end
 
@@ -41,8 +40,8 @@ module SuperTemplate
         @__st_compiled ||= false
       end
 
-      def compile
-        @__st_compiled ||= compiler.compile
+      def compile(raise_errors: false, force: false)
+        @__st_compiled ||= compiler.compile(raise_errors: raise_errors, force: force)
       end
 
       def compiler
@@ -80,7 +79,7 @@ module SuperTemplate
         # view files in a directory named like the component
         directory = File.dirname(source_location)
         filename = File.basename(source_location, ".rb")
-        component_name = name.demodulize.underscore
+        component_name = ActiveSupport::Inflector.underscore(ActiveSupport::Inflector.demodulize(name))
 
         # Add support for nested components defined in the same file.
         #
@@ -107,6 +106,8 @@ module SuperTemplate
         (sidecar_files - [source_location] + sidecar_directory_files + nested_component_files).uniq
       end
     end
+
+    extend ClassMethods
 
     def self.inherited(child)
       child.extend ClassMethods

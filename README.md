@@ -77,7 +77,7 @@ class MySqlTemplate < SuperTemplate::Base
         @limit = limit
     end
 
-    def render
+    def render_template
         MyTable.limit(@limit).all.to_sql
     end
 end
@@ -115,6 +115,21 @@ class MySqlTemplate < SuperTemplate::Base
     def initialize(limit:)
         @limit = limit
     end
+end
+```
+
+## Call Super
+Edit file `app/sqls/sub_sql_template.rb`
+
+```ruby
+class SubSqlTemplate < SuperTemplate::Base
+    def initialize(limit:, offset:)
+        super(limit: limit)
+        @offset = offset
+    end
+    template :erb, <<~ERB
+    <%= super %> limit <%= @offset %>
+    ERB
 end
 ```
 

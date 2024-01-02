@@ -1,3 +1,4 @@
+require "erb"
 require "concurrent-ruby"
 require_relative "errors"
 
@@ -9,18 +10,16 @@ module SuperTemplate
     end
 
     def compile(raise_errors: false, force: false)
+      return if template_class.compiled? && !force
+      return if template_class == SuperTemplate::Base
+      template_class.superclass.compile(raise_errors: raise_errors)
+
       redefinition_lock.synchronize do
         templates = []
         templates = find_sidecar_templates
         templates << template_class.inline_template if template_class.inline_template
         raise TemplateError, "There are #{templates.size} templates defined for #{self}" if templates.size >= 2
-        if templates.empty?
-          self.class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def render_template
-            super.call
-          end
-          RUBY
-        else
+        unless templates.empty?
           compile_template(templates[0])
         end
       end
